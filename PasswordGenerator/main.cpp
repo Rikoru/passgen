@@ -30,7 +30,8 @@ int main()
 		 << "===================================" << endl;
 	
 	//Request password length
-	cout << "= Input integer between 8 and 256 =" << endl;
+	cout << "= Input integer for length of =====" << endl
+		 << "= password to generate: 8 to 256 ==" << endl;
 	while (attempts <= 6)
 	{
 		cin.clear();
@@ -76,7 +77,8 @@ int main()
 	//Check if too many attempts have been performed
 	if (failure == true)
 	{
-		cerr << "Too many attempts. Rerun program.";
+		cerr << "Too many attempts. Rerun program." << endl;
+		system("PAUSE");
 		return -1;
 	}
 
@@ -153,7 +155,8 @@ int main()
 	{
 		cerr << "===================================" << endl
 			 << "-ERROR: Failed to create file " << outName << endl
-			 << "===================================";
+			 << "===================================" << endl;
+		system("PAUSE");
 		return -1;
 	}
 
@@ -185,6 +188,7 @@ int main()
 		 << "===================================" << endl;
 
 	outFile.close();
+	system("PAUSE");
 	return 0;
 }
 
