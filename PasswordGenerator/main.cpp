@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -8,6 +9,9 @@
 using namespace std;
 
 void GeneratePass(int passLength, int runAmount, bool wantLetters, bool wantSymbols, ostream& outstream);
+void MakeLine(int lineLength);
+char EndProgram(string givenReason);
+void Prompt(string type, bool &choice);
 
 int main()
 {
@@ -19,31 +23,35 @@ int main()
 	bool alphabet = false;				//Whether or not to include letters
 	bool symbols = false;				//Whether or not to include symbols
 	ofstream outFile;					//The stream for the output file
-	char outName[80] = {'\0'};			//The name of the output file
-	string prompt;						//Prompts that accept yes/no/true/false
-	//time_t t = time(0);					//Acquire current time
-	//struct tm * now = localtime(&t);	//Structure to display current time
+	char outName[80] = { '\0' };		//The name of the output file
 
 	//Give the header for the program
-	cout << "===================================" << endl
-		 << "==== RANDOM PASSWORD GENERATOR ====" << endl
-		 << "===================================" << endl;
-	
+	MakeLine(35);
+	cout << endl << "==== RANDOM PASSWORD GENERATOR ====" << endl;
+	MakeLine(35);
+
 	//Request password length
-	cout << "= Input integer for length of =====" << endl
-		 << "= password to generate: 8 to 256 ==" << endl;
+	cout << endl << "Input integer (8 to 256) for length" << endl;
+
 	while (attempts <= 6)
 	{
 		cin.clear();
 		cin.sync();
-		cout << "===================================" << endl
-			 << "===================== " << "Attempts: " << attempts << " =" << endl;
-		cout << "> ";
+		MakeLine(35);
+		cout << endl;
+
+		//Line for amount of attempts
+		MakeLine(19);
+		cout << "Attempts: " << attempts << " / 6" << endl << "> ";
+		if (attempts == 6)
+		{
+			cout << "(last attempt) ";
+		}
 		if (!(cin >> length))
 		{
 			if (attempts < 6)
 			{
-				cerr << "-ERROR: Invalid length, try again!" << endl;
+				cerr << endl << "ERROR: Invalid length, try again!" << endl;
 				attempts++;
 				continue;
 			}
@@ -58,7 +66,7 @@ int main()
 		{
 			if (attempts < 6)
 			{
-				cerr << "-ERROR: Not within specified range!" << endl;
+				cerr << endl << "ERROR: Not within specified range!" << endl;
 				attempts++;
 				continue;
 			}
@@ -73,98 +81,49 @@ int main()
 			break;
 		}
 	}
-	
+
 	//Check if too many attempts have been performed
 	if (failure == true)
 	{
-		cerr << "Too many attempts. Rerun program." << endl;
-		system("PAUSE");
+		EndProgram("Too many attempts!");
 		return -1;
 	}
 
-	cin.clear();
-	cin.sync();
-
-	//Check for wanting letters
-	cout << "===================================" << endl
-		 << "== Should letters be in password? =" << endl
-		 << "== true/yes/YES/y/Yes if you want =" << endl
-		 << "===================================" << endl
-		 << "> ";
-	cin >> prompt;
-	if (prompt == "true" || prompt == "yes" || prompt == "YES" || prompt == "y" || prompt == "Yes")
-	{
-		cout << "You chose to include letters" << endl;
-		alphabet = true;
-	}
-	else
-	{
-		cout << "You chose to not include letters" << endl;
-		alphabet = false;
-	}
-	
-	prompt = "no";
-	cin.clear();
-	cin.sync();
-
-	//Check for wanting symbols
-	cout << "===================================" << endl
-		 << "== Should symbols be in password? =" << endl
-		 << "== true/yes/YES/y/Yes if you want =" << endl
-		 << "===================================" << endl
-		 << "> ";
-	cin >> prompt;
-	if (prompt == "true" || prompt == "yes" || prompt == "YES" || prompt == "y" || prompt == "Yes")
-	{
-		cout << "You chose to include symbols" << endl;
-		symbols = true;
-	}
-	else
-	{
-		cout << "You chose to not include symbols" << endl;
-		symbols = false;
-	}
-
-	cin.clear();
-	cin.sync();
+	//Check for wanting letters and symbols
+	Prompt("letters", alphabet);
+	Prompt("symbols", symbols);
 
 	//Request amount of passwords to generate
 	while (amountGen < 1 || amountGen > 100)
 	{
 		cin.clear();
 		cin.sync();
-		cout << "===================================" << endl
-			 << "= How many passwords to generate? =" << endl
-			 << "= Must be between 1 and 100 =======" << endl
-			 << "===================================" << endl
-			 << "> ";
+
+		//Print prompt
+		MakeLine(35);
+		cout << endl << "Amount of passwords to generate: ";
 		cin >> amountGen;
+		if (amountGen < 1 || amountGen > 100)
+		{
+			cout << "Please enter a number between 1 and 100";
+		}
 	}
 	
-
 	//Request output file name
-	cout << "===================================" << endl
-		 << "==== Input an output file name ====" << endl
-		 << "===================================" << endl
-		 << "> ";
+	MakeLine(35); 
+	cout << endl << "Input an output file name: ";
 	cin >> outName;
 
 	//Try to create the file specified
 	outFile.open(outName, ios::app);
 	if (outFile.fail())
 	{
-		cerr << "===================================" << endl
-			 << "-ERROR: Failed to create file " << outName << endl
-			 << "===================================" << endl;
-		system("PAUSE");
+		MakeLine(35);
+		cerr << endl << "ERROR: Failed to create file " << outName << endl;
+		MakeLine(35);
+		EndProgram("Couldn't create file!");
 		return -1;
 	}
-
-	////Display time of generation
-	//outFile << "Time of generation: "
-	//		<< (now->tm_year + 1900) << '-'
-	//		<< (now->tm_mon + 1) << '-'
-	//		<< now->tm_mday << endl;
 
 	//Send to function
 	for (int pass = 1; pass <= amountGen; pass++)
@@ -179,17 +138,66 @@ int main()
 			outFile << '=' << endl;
 		}
 		GeneratePass(length, pass, alphabet, symbols, outFile);
-		cout << "============ " << "Generated: " << setw(4) << pass << " / " << setw(4) << amountGen << endl;
+		MakeLine(13);
+		cout << "Generated: " << setw(4) << pass << " / " << setw(4) << amountGen << endl;
 	}
 
-	//Announce completion
-	cout << "===================================" << endl
-		 << "==== Success, check your file =====" << endl
-		 << "===================================" << endl;
-
 	outFile.close();
-	system("PAUSE");
+	EndProgram("Success, check your file.");
 	return 0;
+}
+
+void Prompt(string type, bool &choice)
+{
+	//Initialize variables
+	string ask = "no";
+	
+	//Print prompt
+	MakeLine(35);
+	cout << endl << "Would you like to include " << type << "?" << endl << "> ";
+	cin.clear();
+	cin.sync();
+	cin >> ask;
+	
+	//Convert input to lowercase
+	transform(ask.begin(), ask.end(), ask.begin(), ::tolower);
+	
+	//Check input
+	if (ask == "true" || "yes" || "affirmative" || "yeah" || "y")
+	{
+		cout << endl << "You chose to include " << type << endl;
+		choice = true;
+	}
+	else
+	{
+		cout << "You chose to not include " << type << endl;
+		choice = false;
+	}
+}
+
+//Produces lines across screen
+void MakeLine(int lineLength)
+{
+	for (int i = 0; i < lineLength; i++)
+	{
+		cout << '=';
+	}
+	cout << ' ';
+}
+
+//Prints failure message and ends program
+char EndProgram(string givenReason)
+{
+	char tempChar[80] = { '\0' };
+	
+	cin.clear();
+	cin.sync();
+
+	cout << endl << givenReason << endl 
+		 << "Input any character to end program: ";
+	cin >> tempChar;
+
+	return tempChar[0];
 }
 
 //Function to generate password
