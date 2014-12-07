@@ -1,17 +1,16 @@
-#include <iostream>
-#include <cstdlib>
-#include <cmath>
-#include <algorithm>
-#include <ctime>
-#include <fstream>
-#include <iomanip>
-#include <string>
+#include <iostream>		//Always needed
+#include <random>		//PRNG stuff
+#include <algorithm>	//Transform function
+#include <fstream>		//File I/O
+#include <iomanip>		//Convenient spacing
+#include <string>		//Manipulate strings
 using namespace std;
 
-void GeneratePass(int passLength, int runAmount, bool wantLetters, bool wantSymbols, ostream& outstream);
 void MakeLine(int lineLength);
-char EndProgram(string givenReason);
-void Prompt(string type, bool &choice);
+void PrintAttempt(int attemptAmount);
+void EndProgram(string givenReason);
+bool Prompt(string type, bool& choice);
+void GeneratePass(int passLength, int runAmount, bool wantLower, bool wantUpper, bool wantSymbols, ostream& outstream);
 
 int main()
 {
@@ -20,7 +19,8 @@ int main()
 	int attempts = 0;					//Amount of attempts for length input
 	int amountGen = 0;					//Amount of passwords to generate
 	bool failure = false;				//Failure to input the length
-	bool alphabet = false;				//Whether or not to include letters
+	bool smallAlpha = false;			//Inclusion of lowercase letters
+	bool largeAlpha = false;			//Inclusion of uppercase letters
 	bool symbols = false;				//Whether or not to include symbols
 	ofstream outFile;					//The stream for the output file
 	char outName[80] = { '\0' };		//The name of the output file
@@ -41,17 +41,14 @@ int main()
 		cout << endl;
 
 		//Line for amount of attempts
-		MakeLine(19);
-		cout << "Attempts: " << attempts << " / 6" << endl << "> ";
-		if (attempts == 6)
-		{
-			cout << "(last attempt) ";
-		}
+		PrintAttempt(attempts);
+		cout << "> ";
+
 		if (!(cin >> length))
 		{
 			if (attempts < 6)
 			{
-				cerr << endl << "ERROR: Invalid length, try again!" << endl;
+				cerr << "ERROR: Not an integer!" << endl << endl;
 				attempts++;
 				continue;
 			}
@@ -66,7 +63,7 @@ int main()
 		{
 			if (attempts < 6)
 			{
-				cerr << endl << "ERROR: Not within specified range!" << endl;
+				cerr << "ERROR: Not within specified range!" << endl << endl;
 				attempts++;
 				continue;
 			}
@@ -76,10 +73,7 @@ int main()
 				break;
 			}
 		}
-		else
-		{
-			break;
-		}
+		else break;
 	}
 
 	//Check if too many attempts have been performed
@@ -90,8 +84,9 @@ int main()
 	}
 
 	//Check for wanting letters and symbols
-	Prompt("letters", alphabet);
-	Prompt("symbols", symbols);
+	smallAlpha = Prompt("lowercase letters", smallAlpha);
+	largeAlpha = Prompt("uppercase letters", largeAlpha);
+	symbols = Prompt("symbols", symbols);
 
 	//Request amount of passwords to generate
 	while (amountGen < 1 || amountGen > 100)
@@ -99,16 +94,40 @@ int main()
 		cin.clear();
 		cin.sync();
 
-		//Print prompt
+		//Prints the prompt
+		cout << endl;
 		MakeLine(35);
-		cout << endl << "Amount of passwords to generate: ";
+		cout << endl << "Passwords to generate (1 to 100)" << endl;
+		MakeLine(35);
+		cout << endl;
+		PrintAttempt(attempts);
+		cout << "> ";
 		cin >> amountGen;
+		
+		//Check range
 		if (amountGen < 1 || amountGen > 100)
 		{
-			cout << "Please enter a number between 1 and 100";
+			if (attempts < 6)
+			{
+				cerr << "ERROR: Not within specified range!" << endl;
+				attempts++;
+				continue;
+			}
+			else
+			{
+				failure = true;
+				break;
+			}
 		}
+		else break;
 	}
 	
+	//Check if too many attempts have been performed
+	if (failure == true)
+	{
+		EndProgram("Too many attempts!");
+		return -1;
+	}
 	//Request output file name
 	MakeLine(35); 
 	cout << endl << "Input an output file name: ";
@@ -130,6 +149,7 @@ int main()
 	{
 		if (pass == 1)
 		{
+			cout << endl;
 			outFile << "= " << "Length: " << setw(4) << length << " ==== Amount: " << setw(4) << amountGen << ' ';
 			for (int equalism = 33; equalism < (length - 1); equalism++)
 			{
@@ -137,42 +157,14 @@ int main()
 			}
 			outFile << '=' << endl;
 		}
-		GeneratePass(length, pass, alphabet, symbols, outFile);
+		GeneratePass(length, pass, smallAlpha, largeAlpha, symbols, outFile);
 		MakeLine(13);
 		cout << "Generated: " << setw(4) << pass << " / " << setw(4) << amountGen << endl;
 	}
-
+	outFile << endl;
 	outFile.close();
-	EndProgram("Success, check your file.");
+	EndProgram("Success, enjoy your file.\n");
 	return 0;
-}
-
-void Prompt(string type, bool &choice)
-{
-	//Initialize variables
-	string ask = "no";
-	
-	//Print prompt
-	MakeLine(35);
-	cout << endl << "Would you like to include " << type << "?" << endl << "> ";
-	cin.clear();
-	cin.sync();
-	cin >> ask;
-	
-	//Convert input to lowercase
-	transform(ask.begin(), ask.end(), ask.begin(), ::tolower);
-	
-	//Check input
-	if (ask == "true" || "yes" || "affirmative" || "yeah" || "y")
-	{
-		cout << endl << "You chose to include " << type << endl;
-		choice = true;
-	}
-	else
-	{
-		cout << "You chose to not include " << type << endl;
-		choice = false;
-	}
 }
 
 //Produces lines across screen
@@ -185,52 +177,108 @@ void MakeLine(int lineLength)
 	cout << ' ';
 }
 
-//Prints failure message and ends program
-char EndProgram(string givenReason)
+void PrintAttempt(int attemptAmount)
 {
-	char tempChar[80] = { '\0' };
-	
+	MakeLine(19);
+	cout << "Attempts: " << attemptAmount << " / 6" << endl;
+	if (attemptAmount == 6)
+	{
+		cout << "[FINAL] ";
+	}
+}
+
+//Prints failure message and ends program
+void EndProgram(string givenReason)
+{
+	//Ensure nothing remains in the input stream
 	cin.clear();
 	cin.sync();
 
-	cout << endl << givenReason << endl 
-		 << "Input any character to end program: ";
-	cin >> tempChar;
+	cout << endl << givenReason << endl
+		<< "Press Enter / Return key";
+	cin.get();
+}
 
-	return tempChar[0];
+bool Prompt(string type, bool& choice)
+{
+	//Initialize variable
+	string ask = "no";
+
+	//Print prompt
+	cout << endl;
+	MakeLine(35);
+	cout << endl << "Should " << type << " be included?" << endl << "> ";
+	cin.clear();
+	cin.sync();
+	getline(cin, ask);
+	
+	//Convert input to lowercase
+	transform(ask.begin(), ask.end(), ask.begin(), ::tolower);
+	
+	//Convert type to capital letters
+	transform(type.begin(), type.end(), type.begin(), ::toupper);
+
+	cout << "[STATUS: " << type;
+
+	//Check input
+	if (ask == "true" || ask == "yes" || ask == "affirmative" || ask == "yeah" || ask.at(0) == 'y' )
+	{
+		cout << " ENABLED]" << endl;
+		return true;
+	}
+	else if (ask == "ayy lmao")
+	{
+		cout << " ARE FOR HUMANS]" << endl
+			 << "[THEREFORE, NOT INCLUDED]" << endl;
+		return false;
+	}
+	else
+	{
+		cout << " DISABLED]" << endl;
+		return false;
+	}
 }
 
 //Function to generate password
-void GeneratePass(int passLength, int runAmount, bool wantLetters, bool wantSymbols, ostream& outstream)
+void GeneratePass(int passLength, int runAmount, bool wantLower, bool wantUpper, bool wantSymbols, ostream& outstream)
 {
-	unsigned int tempo = (unsigned int)time(0);
-	srand(tempo % (runAmount + (tempo/100)));
-	char letters[26] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
-	char symbo[11] = { '!', '#', '@', '~', '$', '^', '.', ',', '-', '+', '%' };
+	//Initializes random number generator
+	random_device rd;
+	mt19937 mt(rd());
+
+	//Provides boundaries for where to distribute numbers
+	uniform_int_distribution<int> dist(0, 9);				//Random distribution for numeral array
+	uniform_int_distribution<int> dist2(0, 25);				//Random distribution for letter arrays
+	uniform_int_distribution<int> dist3(0, 13);				//Random distribution for symbol array
+	uniform_int_distribution<int> dist4(1, passLength + 1);
 	
-	if (passLength < 34)
+	//Initialize arrays
+	int numeralHold[256] = { '\0' };
+	char lowerHold[256] = { '\0' };
+	char upperHold[256] = { '\0' };
+	char symboHold[256] = { '\0' };
+
+	//Storage of characters available
+	char lowerCase[26] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+	char upperCase[26] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+	char symbo[14] = { '!', '#', '@', '~', '$', '^', '.', ',', '-', '+', '%', '?', '*', '=' };
+	
+	//Fills arrays of desired password length
+	for (int p = 0; p <= passLength ; p++)
 	{
-		for (int spacer = 0; spacer < (34 - passLength); spacer++)
-		{
-			outstream << ' ';
-		}
+		numeralHold[p] = dist(mt);
+		if (wantLower == true) lowerHold[p] = lowerCase[dist2(mt)];
+		if (wantUpper == true) upperHold[p] = upperCase[dist2(mt)];
+		if (wantSymbols == true) symboHold[p] = symbo[dist3(mt)];
 	}
 
-	for (int p = 0; p < passLength; p++)
+	//Prints from arrays to output file
+	for (int p = 1; p <= passLength; p++)
 	{
-		if (wantLetters == true && (p % 5 == 0))
-		{
-			outstream << letters[rand() % 26];
-		}
-		else if (wantSymbols == true && (p % 7 == 0))
-		{
-			outstream << symbo[rand() % 11];
-		}
-		else
-		{
-			outstream << (rand() % 10);
-		}
+		if (wantLower == true && (p % dist4(mt) == 0)) outstream << lowerHold[p];
+		else if (wantUpper == true && (p % dist4(mt) == 0)) outstream << upperHold[p];
+		else if (wantSymbols == true && (p % dist4(mt) == 0)) outstream << symboHold[p];
+		else outstream << numeralHold[p];
 	}
-
 	outstream << endl;
 }
