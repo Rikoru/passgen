@@ -247,38 +247,40 @@ void GeneratePass(int passLength, int runAmount, bool wantLower, bool wantUpper,
 	mt19937 mt(rd());
 
 	//Provides boundaries for where to distribute numbers
-	uniform_int_distribution<int> dist(0, 9);				//Random distribution for numeral array
-	uniform_int_distribution<int> dist2(0, 25);				//Random distribution for letter arrays
-	uniform_int_distribution<int> dist3(0, 13);				//Random distribution for symbol array
-	uniform_int_distribution<int> dist4(1, passLength + 1);
-	
-	//Initialize arrays
-	int numeralHold[256] = { '\0' };
-	char lowerHold[256] = { '\0' };
-	char upperHold[256] = { '\0' };
-	char symboHold[256] = { '\0' };
+	uniform_int_distribution<int> numDist(0, 9);		//Random distribution for numbers
+	uniform_int_distribution<int> letDist(0, 25);		//Random distribution for letters
+	uniform_int_distribution<int> symDist(0, 13);		//Random distribution for symbols
+		
+	//Determines which options can be used for the output
+	vector<int> choices = {1};				//Always include numbers
+	if (wantLower) choices.push_back(2);	//Include lowercase
+	if (wantUpper) choices.push_back(3);	//Include uppercase
+	if (wantSymbols) choices.push_back(4);	//Include symbols
+	uniform_int_distribution<int> typeDist(0, choices.size() - 1);
 
 	//Storage of characters available
 	char lowerCase[26] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 	char upperCase[26] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 	char symbo[14] = { '!', '#', '@', '~', '$', '^', '.', ',', '-', '+', '%', '?', '*', '=' };
 	
-	//Fills arrays of desired password length
-	for (int p = 0; p <= passLength ; p++)
+	//Prints to output file
+	for (int p = 0; p < passLength; p++)
 	{
-		numeralHold[p] = dist(mt);
-		if (wantLower == true) lowerHold[p] = lowerCase[dist2(mt)];
-		if (wantUpper == true) upperHold[p] = upperCase[dist2(mt)];
-		if (wantSymbols == true) symboHold[p] = symbo[dist3(mt)];
-	}
-
-	//Prints from arrays to output file
-	for (int p = 1; p <= passLength; p++)
-	{
-		if (wantLower == true && (p % dist4(mt) == 0)) outstream << lowerHold[p];
-		else if (wantUpper == true && (p % dist4(mt) == 0)) outstream << upperHold[p];
-		else if (wantSymbols == true && (p % dist4(mt) == 0)) outstream << symboHold[p];
-		else outstream << numeralHold[p];
+		switch (choices[typeDist(mt)])
+		{
+		case 1:			//Numbers
+			outstream << numDist(mt);
+			break;
+		case 2:			//Lowercase
+			outstream << lowerCase[letDist(mt)];
+			break;
+		case 3:			//Uppercase
+			outstream << upperCase[letDist(mt)];
+			break;
+		case 4:			//Symbols
+			outstream << symbo[symDist(mt)];
+			break;
+		}
 	}
 	outstream << endl;
 }
