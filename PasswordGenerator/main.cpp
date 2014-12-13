@@ -202,7 +202,7 @@ void EndProgram(string givenReason)
 bool Prompt(string type, bool& choice)
 {
 	//Initialize variable
-	string ask = "no";
+	string ask = "\0";
 
 	//Print prompt
 	cout << endl;
@@ -210,7 +210,10 @@ bool Prompt(string type, bool& choice)
 	cout << endl << "Should " << type << " be included?" << endl << "> ";
 	cin.clear();
 	cin.sync();
-	getline(cin, ask);
+	while (ask == "\0") {
+		getline(cin, ask);
+	}
+
 	
 	//Convert input to lowercase
 	transform(ask.begin(), ask.end(), ask.begin(), ::tolower);
@@ -221,20 +224,27 @@ bool Prompt(string type, bool& choice)
 	cout << "[STATUS: " << type;
 
 	//Check input
-	if (ask == "true" || ask == "yes" || ask == "affirmative" || ask == "yeah" || ask.at(0) == 'y' )
-	{
-		cout << " ENABLED]" << endl;
-		return true;
+	try {
+		if (ask == "true" || ask == "yes" || ask == "affirmative" || ask == "yeah" || ask.at(0) == 'y')
+		{
+			cout << " ENABLED]" << endl;
+			return true;
+		}
+		else if (ask == "ayy lmao")
+		{
+			cout << " ARE FOR HUMANS]" << endl
+				<< "[THEREFORE, NOT INCLUDED]" << endl;
+			return false;
+		}
+		else
+		{
+			cout << " DISABLED]" << endl;
+			return false;
+		}
 	}
-	else if (ask == "ayy lmao")
+	catch (...)
 	{
-		cout << " ARE FOR HUMANS]" << endl
-			 << "[THEREFORE, NOT INCLUDED]" << endl;
-		return false;
-	}
-	else
-	{
-		cout << " DISABLED]" << endl;
+		cerr << "[ERROR - DEFAULTING TO FALSE]" << endl;
 		return false;
 	}
 }
