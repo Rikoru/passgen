@@ -2,9 +2,9 @@
 ### It lets you make secure passwords!
 
 #### To-do:
-0. Fix the "Press Enter / Return key" no wait bug
-1. Create makefiles (using cmake)
-2. Add executable for Windows
+1. Fix the "Press Enter / Return key" no wait bug
+2. Create makefile
+3. Add executable for Windows
 
 ### Installation (This will be improved at some point)
 1. Clone repository
