@@ -6,7 +6,7 @@
 #include <string>		//Manipulate strings
 #include <cstring>		//Manipulate c-strings
 
-void PrintHelp(bool stdOut);
+void PrintHelp(bool stdOut, std::ostream &outstream);
 void MakeLine(int lineLength);
 void PrintAttempt(int attemptAmount);
 void EndProgram(std::string givenReason);
@@ -25,8 +25,13 @@ int main(int argc, char* argv[])
 	bool symbols = false;				//Whether or not to include symbols
 	bool correctAmount = false;			//Whether or not valid amount was given
 	bool printStdOut = false;			//Whether or not to print to stdout
-
+	bool needHelp = false;				//Whether or not help is needed
+	bool gui = false;					//Whether the 'wizard' is displayed
+	std::ofstream outFile;				//The stream for the output file
+	char outName[80] = { '\0' };		//The name of the output file
+	
 	//Check if program is running in stdout mode
+	if (argc <= 1) gui = true;
 	for (int i = 0; i < argc; i++)
 	{
 		if ((strcmp(argv[i], "-c") == 0) || (strcmp(argv[i], "--stdout") == 0))
@@ -35,8 +40,12 @@ int main(int argc, char* argv[])
 		}
 		if ((strcmp(argv[i], "-h") == 0) || (strcmp(argv[i], "--help") == 0))
 		{
-			PrintHelp(printStdOut); //Display help and exit
-			return 0;
+			if (printStdOut || argc == 2)
+			{
+				PrintHelp(printStdOut, std::cout); //Display help and exit
+				return 0;
+			}
+			else needHelp = true;
 		}
 		if ((strcmp(argv[i], "-a") == 0) || (strcmp(argv[i], "--smallalpha") == 0))
 		{
@@ -65,108 +74,68 @@ int main(int argc, char* argv[])
 			//Make sure not at end of arguments
 			if (!(i + 1 >= argc))
 			{
+				//Set the length of passwords to generate
 				length = atoi(argv[i + 1]);
 				if (length < 6) length = 6;
 				if (length > 256) length = 256;
 			}
 		}
+		if ((strcmp(argv[i], "-o") == 0) || (strcmp(argv[i], "--output") == 0))
+		{
+			//Make sure not at end of arguments
+			if (!(i + 1 >= argc))
+			{
+				//copy 79 characters to the output name
+				//overridden by stdout being present
+				strncpy_s(outName, 80, argv[i + 1], _TRUNCATE);
+			}
+		}
 	}
-
+	// simplify things, use more functions
+	// make life easier
 	if (printStdOut == false)
 	{
-		std::ofstream outFile;				//The stream for the output file
-		char outName[80] = { '\0' };		//The name of the output file
-
-		//Give the header for the program
-		MakeLine(35);
-		std::cout << std::endl << "==== RANDOM PASSWORD GENERATOR ====" << std::endl;
-		MakeLine(35);
-
-		//Request password length
-		std::cout << std::endl << "Input integer (8 to 256) for length" << std::endl;
-
-		while (attempts <= 6)
+		if (gui)
 		{
-			std::cin.clear();
-			std::cin.sync();
+			//Give the header for the program
 			MakeLine(35);
-			std::cout << std::endl;
-
-			//Line for amount of attempts
-			PrintAttempt(attempts);
-			std::cout << "> ";
-
-			if (!(std::cin >> length))
-			{
-				if (attempts < 6)
-				{
-					std::cerr << "ERROR: Not an integer!" << std::endl << std::endl;
-					attempts++;
-					continue;
-				}
-				else
-				{
-					failure = true;
-					break;
-				}
-
-			}
-			else if (length < 8 || length > 256)
-			{
-				if (attempts < 6)
-				{
-					std::cerr << "ERROR: Not within specified range!" << std::endl << std::endl;
-					attempts++;
-					continue;
-				}
-				else
-				{
-					failure = true;
-					break;
-				}
-			}
-			else break;
-		}
-
-		//Check if too many attempts have been performed
-		if (failure == true)
-		{
-			EndProgram("Too many attempts!");
-			return -1;
-		}
-
-		//Check for wanting letters and symbols
-		smallAlpha = Prompt("lowercase letters", smallAlpha);
-		largeAlpha = Prompt("uppercase letters", largeAlpha);
-		symbols = Prompt("symbols", symbols);
-
-		//Request amount of passwords to generate
-		do
-		{
-			//Reset for loop
-			correctAmount = false;
-			std::cin.clear();
-			std::cin.sync();
-
-			//Prints the prompt
-			std::cout << std::endl;
+			std::cout << std::endl << "==== RANDOM PASSWORD GENERATOR ====" << std::endl;
 			MakeLine(35);
-			std::cout << std::endl << "How many passwords to generate " << std::endl
-				<< "Input an integer (1 to 100)" << std::endl;
-			MakeLine(35);
-			std::cout << std::endl;
-			PrintAttempt(attempts);
-			std::cout << "> ";
-			try
-			{
-				std::cin >> amountGen;
 
-				//Check range
-				if (amountGen < 1 || amountGen > 100)
+			//Request password length
+			std::cout << std::endl << "Input integer (8 to 256) for length" << std::endl;
+
+			while (attempts <= 6)
+			{
+				std::cin.clear();
+				std::cin.sync();
+				MakeLine(35);
+				std::cout << std::endl;
+
+				//Line for amount of attempts
+				PrintAttempt(attempts);
+				std::cout << "> ";
+
+				if (!(std::cin >> length))
 				{
 					if (attempts < 6)
 					{
-						std::cerr << "ERROR: Not within specified range!" << std::endl;
+						std::cerr << "ERROR: Not an integer!" << std::endl << std::endl;
+						attempts++;
+						continue;
+					}
+					else
+					{
+						failure = true;
+						break;
+					}
+
+				}
+				else if (length < 8 || length > 256)
+				{
+					if (attempts < 6)
+					{
+						std::cerr << "ERROR: Not within specified range!" << std::endl << std::endl;
 						attempts++;
 						continue;
 					}
@@ -176,32 +145,90 @@ int main(int argc, char* argv[])
 						break;
 					}
 				}
-				else correctAmount = true;
+				else break;
 			}
-			catch (...)
-			{
-				std::cerr << "ERROR: Could not understand input!" << std::endl;
-				attempts++;
-				if (attempts >= 6)
-				{
-					failure = true;
-					break;
-				}
-			}
-		} while (correctAmount == false);
 
-		//Check if too many attempts have been performed
-		if (failure == true)
-		{
-			EndProgram("Too many attempts!");
-			return -1;
-		}
-		//Request output file name
-		MakeLine(35);
-		std::cout << std::endl << "Input a file name to use for output" << std::endl << "> ";
+			//Check if too many attempts have been performed
+			if (failure == true)
+			{
+				EndProgram("Too many attempts!");
+				return -1;
+			}
+
+			//Check for wanting letters and symbols
+			smallAlpha = Prompt("lowercase letters", smallAlpha);
+			largeAlpha = Prompt("uppercase letters", largeAlpha);
+			symbols = Prompt("symbols", symbols);
+
+			//Request amount of passwords to generate
+			do
+			{
+				//Reset for loop
+				correctAmount = false;
+				std::cin.clear();
+				std::cin.sync();
+
+				//Prints the prompt
+				std::cout << std::endl;
+				MakeLine(35);
+				std::cout << std::endl << "How many passwords to generate " << std::endl
+					<< "Input an integer (1 to 100)" << std::endl;
+				MakeLine(35);
+				std::cout << std::endl;
+				PrintAttempt(attempts);
+				std::cout << "> ";
+				try
+				{
+					std::cin >> amountGen;
+
+					//Check range
+					if (amountGen < 1 || amountGen > 100)
+					{
+						if (attempts < 6)
+						{
+							std::cerr << "ERROR: Not within specified range!" << std::endl;
+							attempts++;
+							continue;
+						}
+						else
+						{
+							failure = true;
+							break;
+						}
+					}
+					else correctAmount = true;
+				}
+				catch (...)
+				{
+					std::cerr << "ERROR: Could not understand input!" << std::endl;
+					attempts++;
+					if (attempts >= 6)
+					{
+						failure = true;
+						break;
+					}
+				}
+			} while (correctAmount == false);
+
+			//Check if too many attempts have been performed
+			if (failure == true)
+			{
+				EndProgram("Too many attempts!");
+				return -1;
+			}
+			
+			//Request output file name
+			MakeLine(35);
+			std::cout << std::endl << "Input a file name to use for output" << std::endl << "> ";
+		} //if gui
 		try
 		{
-			std::cin >> outName;
+			if (gui)
+			{
+				std::cin.clear();
+				std::cin.sync();
+				std::cin >> outName;
+			}
 
 			//Try to create the file specified
 			outFile.open(outName, std::ios::app);
@@ -221,27 +248,25 @@ int main(int argc, char* argv[])
 			EndProgram("Critical failure!");
 			return -1;
 		}
-
+		
 		//Send to function
 		for (int pass = 1; pass <= amountGen; pass++)
 		{
 			if (pass == 1)
 			{
 				std::cout << std::endl;
-				outFile << "= " << "Length: " << std::setw(4) << length << " ==== Amount: " << std::setw(4) << amountGen << ' ';
-				for (int equalism = 33; equalism < (length - 1); equalism++)
-				{
-					outFile << '=';
-				}
-				outFile << '=' << std::endl;
+				outFile << "PasswordGenerator | length: " << length << " | amount: " << amountGen << "\n";
 			}
 			GeneratePass(length, pass, smallAlpha, largeAlpha, symbols, outFile);
-			MakeLine(13);
 			std::cout << "Generated: " << std::setw(4) << pass << " / " << std::setw(4) << amountGen << std::endl;
 		}
 		outFile << std::endl;
 		outFile.close();
-		EndProgram("Success, enjoy your file.\n");
+		if (gui) EndProgram("Success, enjoy your file.\n");
+	}
+	else if (needHelp)
+	{
+		PrintHelp(printStdOut, std::cout);
 	}
 	else
 	{
@@ -258,12 +283,12 @@ int main(int argc, char* argv[])
 }
 
 //Displays help and exits program
-void PrintHelp(bool stdOut)
+void PrintHelp(bool stdOut, std::ostream &outstream)
 {
-	std::cout << "Password Generator\n\n" << '\t' << "It generates passwords!\n\n"
+	outstream << "Password Generator\n\n" << '\t' << "It generates passwords!\n\n"
 		<< "Available Commands\n\n"
 		<< '\t' << "-c | --stdout = Prints only to standard output.\n"
-		<< '\t' << "Put this at the beginning if you want it to affect help.\n\n"
+		<< '\t' << "Adding this will negate the use of an output file.\n\n"
 		<< '\t' << "-h | --help = Opens this help file.\n\n"
 		<< '\t' << "-a | --smallalpha = Enables lowercase letters.\n\n"
 		<< '\t' << "-A | --largealpha = Enables uppercase letters.\n\n"
@@ -274,8 +299,12 @@ void PrintHelp(bool stdOut)
 		<< '\t' << "-l | --length = Specify length of passwords to generate.\n"
 		<< '\t' << "e.g. \'passgen -l 32\' will generate a 32 digit password.\n"
 		<< '\t' << "Max length to generate: 256 characters.\n\n"
+		<< '\t' << "-o | --output = Specify the filename to output to.\n"
+		<< '\t' << "e.g. \'passgen -o test.txt\' will generate 1 8-digit password.\n" 
+		<< '\t' << "Overridden by using \'-c | --stdout\', pointless to combine them.
+		\n\n"
 		<< "More commands are likely to be added with time, stay tuned.\n";
-	if (!stdOut) std::cin.get(); //Keeps the command window open until enter is pressed
+	if (stdOut) EndProgram("no"); //Keeps the command window open until enter is pressed
 }
 
 //Produces lines across screen
@@ -306,8 +335,8 @@ void EndProgram(std::string givenReason)
 	std::cin.clear();
 	std::cin.sync();
 
-	std::cout << std::endl << givenReason << std::endl
-		<< "Press Enter / Return key";
+	if (givenReason != "no") std::cout << std::endl << givenReason << std::endl;
+	std::cout << "Press Enter / Return key to exit";
 	std::cin.get();
 }
 
@@ -316,7 +345,8 @@ bool Prompt(std::string type, bool &choice)
 {
 	//Initialize variable
 	std::string ask = "\0";
-
+	std::cin.clear();
+	std::cin.sync();
 	//Print prompt
 	std::cout << std::endl;
 	MakeLine(35);
