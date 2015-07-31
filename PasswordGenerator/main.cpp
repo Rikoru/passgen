@@ -11,7 +11,7 @@ void MakeLine(int lineLength);
 void PrintAttempt(int attemptAmount);
 void EndProgram(std::string givenReason);
 bool Prompt(std::string type, bool &choice);
-void GeneratePass(int passLength, int runAmount, bool wantLower, bool wantUpper, bool wantSymbols, std::ostream &outstream);
+void GeneratePass(int passLength, bool wantLower, bool wantUpper, bool wantSymbols, std::ostream &outstream);
 
 int main(int argc, char* argv[])
 {
@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 	bool needHelp = false;				//Whether or not help is needed
 	bool gui = false;					//Whether the 'wizard' is displayed
 	std::ofstream outFile;				//The stream for the output file
-	char outName[80] = { '\0' };		//The name of the output file
+	std::string outName;				//The name of the output file
 	
 	//Check if program is running in stdout mode
 	if (argc <= 1) gui = true;
@@ -85,9 +85,7 @@ int main(int argc, char* argv[])
 			//Make sure not at end of arguments
 			if (!(i + 1 >= argc))
 			{
-				//copy 79 characters to the output name
-				//overridden by stdout being present
-				strncpy_s(outName, 80, argv[i + 1], _TRUNCATE);
+				outName = argv[i + 1];
 			}
 		}
 	}
@@ -220,7 +218,7 @@ int main(int argc, char* argv[])
 			//Request output file name
 			MakeLine(35);
 			std::cout << std::endl << "Input a file name to use for output" << std::endl << "> ";
-		} //if gui
+		} 
 		try
 		{
 			if (gui)
@@ -231,7 +229,7 @@ int main(int argc, char* argv[])
 			}
 
 			//Try to create the file specified
-			outFile.open(outName, std::ios::app);
+			outFile.open(outName.c_str(), std::ios::app);
 			if (outFile.fail())
 			{
 				outFile.close();
@@ -257,7 +255,7 @@ int main(int argc, char* argv[])
 				std::cout << std::endl;
 				outFile << "PasswordGenerator | length: " << length << " | amount: " << amountGen << "\n";
 			}
-			GeneratePass(length, pass, smallAlpha, largeAlpha, symbols, outFile);
+			GeneratePass(length, smallAlpha, largeAlpha, symbols, outFile);
 			std::cout << "Generated: " << std::setw(4) << pass << " / " << std::setw(4) << amountGen << std::endl;
 		}
 		outFile << std::endl;
@@ -270,13 +268,13 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		for (int i = 0; i < amountGen; i++)
+		for (int i = 1; i <= amountGen; i++)
 		{
-			if (i == 0 && amountGen != 1)
+			if (i == 1 && amountGen != 1)
 			{
 				std::cout << "PasswordGenerator | length: " << length << " | amount: " << amountGen << "\n";
 			}
-			GeneratePass(length, i+1, smallAlpha, largeAlpha, symbols, std::cout);
+			GeneratePass(length, smallAlpha, largeAlpha, symbols, std::cout);
 		}
 	}
 	return 0;
@@ -301,8 +299,7 @@ void PrintHelp(bool stdOut, std::ostream &outstream)
 		<< '\t' << "Max length to generate: 256 characters.\n\n"
 		<< '\t' << "-o | --output = Specify the filename to output to.\n"
 		<< '\t' << "e.g. \'passgen -o test.txt\' will generate 1 8-digit password.\n" 
-		<< '\t' << "Overridden by using \'-c | --stdout\', pointless to combine them.
-		\n\n"
+		<< '\t' << "Overridden by using \'-c | --stdout\', pointless to combine them.\n\n"
 		<< "More commands are likely to be added with time, stay tuned.\n";
 	if (stdOut) EndProgram("no"); //Keeps the command window open until enter is pressed
 }
@@ -347,7 +344,7 @@ bool Prompt(std::string type, bool &choice)
 	std::string ask = "\0";
 	std::cin.clear();
 	std::cin.sync();
-	//Print prompt
+	//Print prompt with expected styling
 	std::cout << std::endl;
 	MakeLine(35);
 	std::cout << std::endl << "Should " << type << " be included?" << std::endl << "> ";
@@ -367,7 +364,7 @@ bool Prompt(std::string type, bool &choice)
 
 	//Check input
 	try {
-		if (ask == "true" || ask == "yes" || ask == "affirmative" || ask == "yeah" || ask.at(0) == 'y')
+		if (ask == "true" || ask.at(0) == 'y')
 		{
 			std::cout << " ENABLED]" << std::endl;
 			return true;
@@ -386,7 +383,7 @@ bool Prompt(std::string type, bool &choice)
 }
 
 //Function to generate password
-void GeneratePass(int passLength, int runAmount, bool wantLower, bool wantUpper, bool wantSymbols, std::ostream &outstream)
+void GeneratePass(int passLength, bool wantLower, bool wantUpper, bool wantSymbols, std::ostream &outstream)
 {
 	//Initializes random number generator
 	std::random_device rd;
