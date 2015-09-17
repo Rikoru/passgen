@@ -97,53 +97,51 @@ int main(int argc, char* argv[])
 		{
 			//Give the header for the program
 			MakeLine(35);
-			std::cout << std::endl << "==== RANDOM PASSWORD GENERATOR ====" << std::endl;
+			std::cout << "\n" << "==== RANDOM PASSWORD GENERATOR ====\n";
 			MakeLine(35);
 
 			//Request password length
-			std::cout << std::endl << "Input integer (8 to 256) for length" << std::endl;
+			std::cout << "\n" << "Input integer (6 to 256) for length\n";
 
-			while (attempts <= 6)
+			while (attempts <= 6 && failure == false)
 			{
-				std::cin.clear();
-				std::cin.sync();
 				MakeLine(35);
-				std::cout << std::endl;
+				std::cout << "\n";
 
 				//Line for amount of attempts
 				PrintAttempt(attempts);
 				std::cout << "> ";
 
-				if (!(std::cin >> length))
+				if (!(std::cin >> length)) //Could not input into integer
 				{
-					if (attempts < 6)
+					if (attempts < 6) 
 					{
-						std::cerr << "ERROR: Not an integer!" << std::endl << std::endl;
+						std::cerr << "ERROR: Not an integer!\n\n";
+						std::cin.clear();
+						std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 						attempts++;
 						continue;
 					}
-					else
+					else //Exceeded 6 attempts
 					{
 						failure = true;
-						break;
 					}
 
 				}
-				else if (length < 8 || length > 256)
+				else if (length < 6 || length > 256) //Checking if within range
 				{
 					if (attempts < 6)
 					{
-						std::cerr << "ERROR: Not within specified range!" << std::endl << std::endl;
+						std::cerr << "ERROR: Not within specified range!\n\n";
 						attempts++;
 						continue;
 					}
-					else
+					else //Exceeded 6 attempts
 					{
 						failure = true;
-						break;
 					}
 				}
-				else break;
+				else break; //Successfully input integer (in range)
 			}
 
 			//Check if too many attempts have been performed
@@ -164,15 +162,15 @@ int main(int argc, char* argv[])
 				//Reset for loop
 				correctAmount = false;
 				std::cin.clear();
-				std::cin.sync();
+				std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
 				//Prints the prompt
-				std::cout << std::endl;
+				std::cout << "\n";
 				MakeLine(35);
-				std::cout << std::endl << "How many passwords to generate " << std::endl
-					<< "Input an integer (1 to 100)" << std::endl;
+				std::cout << "\nHow many passwords to generate\n" 
+					<< "Input an integer (1 to 100)\n";
 				MakeLine(35);
-				std::cout << std::endl;
+				std::cout << "\n";
 				PrintAttempt(attempts);
 				std::cout << "> ";
 				try
@@ -184,7 +182,7 @@ int main(int argc, char* argv[])
 					{
 						if (attempts < 6)
 						{
-							std::cerr << "ERROR: Not within specified range!" << std::endl;
+							std::cerr << "ERROR: Not within specified range!\n";
 							attempts++;
 							continue;
 						}
@@ -198,7 +196,7 @@ int main(int argc, char* argv[])
 				}
 				catch (...)
 				{
-					std::cerr << "ERROR: Could not understand input!" << std::endl;
+					std::cerr << "ERROR: Could not understand input!\n";
 					attempts++;
 					if (attempts >= 6)
 					{
@@ -217,14 +215,14 @@ int main(int argc, char* argv[])
 			
 			//Request output file name
 			MakeLine(35);
-			std::cout << std::endl << "Input a file name to use for output" << std::endl << "> ";
+			std::cout << "\n" << "Input a file name to use for output\n" << "> ";
 		} 
 		try
 		{
 			if (gui)
 			{
 				std::cin.clear();
-				std::cin.sync();
+				std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 				std::cin >> outName;
 			}
 
@@ -233,7 +231,7 @@ int main(int argc, char* argv[])
 			if (outFile.fail())
 			{
 				outFile.close();
-				std::cerr << "ERROR: Failed to create file " << outName << std::endl;
+				std::cerr << "ERROR: Failed to create file " << outName << "\n";
 				MakeLine(35);
 				EndProgram("Couldn't create file!");
 				return -1;
@@ -242,7 +240,7 @@ int main(int argc, char* argv[])
 		catch (...)
 		{
 			outFile.close();
-			std::cerr << "ERROR: Critical failure, shutting down" << std::endl;
+			std::cerr << "ERROR: Critical failure, shutting down\n";
 			EndProgram("Critical failure!");
 			return -1;
 		}
@@ -252,13 +250,13 @@ int main(int argc, char* argv[])
 		{
 			if (pass == 1)
 			{
-				std::cout << std::endl;
+				std::cout << "\n";
 				outFile << "PasswordGenerator | length: " << length << " | amount: " << amountGen << "\n";
 			}
 			GeneratePass(length, smallAlpha, largeAlpha, symbols, outFile);
-			std::cout << "Generated: " << std::setw(4) << pass << " / " << std::setw(4) << amountGen << std::endl;
+			std::cout << "Generated: " << std::setw(4) << pass << " / " << std::setw(4) << amountGen << "\n";
 		}
-		outFile << std::endl;
+		outFile << "\n";
 		outFile.close();
 		if (gui) EndProgram("Success, enjoy your file.\n");
 	}
@@ -318,10 +316,10 @@ void MakeLine(int lineLength)
 void PrintAttempt(int attemptAmount)
 {
 	MakeLine(19);
-	std::cout << "Attempts: " << attemptAmount << " / 6" << std::endl;
+	std::cout << "Attempts: " << attemptAmount << " / 6\n";
 	if (attemptAmount == 6)
 	{
-		std::cout << "[FINAL] ";
+		std::cout << "[Last Try] ";
 	}
 }
 
@@ -330,9 +328,9 @@ void EndProgram(std::string givenReason)
 {
 	//Ensure nothing remains in the input stream
 	std::cin.clear();
-	std::cin.sync();
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
-	if (givenReason != "no") std::cout << std::endl << givenReason << std::endl;
+	if (givenReason != "no") std::cout << "\n" << givenReason << "\n";
 	std::cout << "Press Enter / Return key to exit";
 	std::cin.get();
 }
@@ -343,13 +341,13 @@ bool Prompt(std::string type, bool &choice)
 	//Initialize variable
 	std::string ask = "\0";
 	std::cin.clear();
-	std::cin.sync();
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 	//Print prompt with expected styling
-	std::cout << std::endl;
+	std::cout << "\n";
 	MakeLine(35);
-	std::cout << std::endl << "Should " << type << " be included?" << std::endl << "> ";
+	std::cout << "\n" << "Should " << type << " be included?\n" << "> ";
 	std::cin.clear();
-	std::cin.sync();
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 	while (ask == "\0") {
 		getline(std::cin, ask);
 	}
@@ -366,18 +364,18 @@ bool Prompt(std::string type, bool &choice)
 	try {
 		if (ask == "true" || ask.at(0) == 'y')
 		{
-			std::cout << " ENABLED]" << std::endl;
+			std::cout << " ENABLED]\n";
 			return true;
 		}
 		else
 		{
-			std::cout << " DISABLED]" << std::endl;
+			std::cout << " DISABLED]\n";
 			return false;
 		}
 	}
 	catch (...)
 	{
-		std::cerr << "[ERROR - DEFAULTING TO FALSE]" << std::endl;
+		std::cerr << "[ERROR - DEFAULTING TO FALSE]\n";
 		return false;
 	}
 }
@@ -425,5 +423,5 @@ void GeneratePass(int passLength, bool wantLower, bool wantUpper, bool wantSymbo
 			break;
 		}
 	}
-	outstream << std::endl;
+	outstream << "\n";
 }
