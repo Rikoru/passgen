@@ -1,13 +1,11 @@
 #include <iostream>		//Always needed
-#include <random>		//PRNG stuff
-#include <algorithm>	//Transform function
 #include <fstream>		//File I/O
 #include <iomanip>		//Convenient spacing
 #include <string>		//Manipulate strings
 #include <cstring>		//Manipulate c-strings
+#include "passgen.h" //Generation functions
 
 void PrintHelp(std::ostream &outstream);
-void GeneratePass(int passLength, bool wantLower, bool wantUpper, bool wantSymbols, std::ostream &outstream);
 
 int main(int argc, char* argv[])
 {
@@ -67,14 +65,10 @@ int main(int argc, char* argv[])
 		PrintHelp(std::cout);
 	}
 	else {
-		for (int i = 1; i <= amountGen; i++)
-		{
-			if (i == 1 && amountGen != 1)
-			{
-				std::cout << "PasswordGenerator | length: " << length << " | amount: " << amountGen << "\n";
-			}
-			GeneratePass(length, smallAlpha, largeAlpha, symbols, std::cout);
-		}
+		//Create a Passgen object using user-defined variables
+		Passgen pg(length, amountGen, smallAlpha, largeAlpha, symbols);
+		//Output based on amount requested
+		pg.printPass();
 	}
 	return 0;
 }
@@ -95,50 +89,4 @@ void PrintHelp(std::ostream &outstream)
 		<< '\t' << "e.g. \'passgen -l 32\' will generate a 32 digit password.\n"
 		<< '\t' << "Max length to generate: 256 characters.\n\n"
 		<< "More commands are likely to be added with time, stay tuned.\n";
-}
-
-//Function to generate password
-void GeneratePass(int passLength, bool wantLower, bool wantUpper, bool wantSymbols, std::ostream &outstream)
-{
-	//Initializes random number generator
-	std::random_device rd;
-	std::mt19937 mt(rd());
-
-	//Provides boundaries for where to distribute numbers
-	std::uniform_int_distribution<int> numDist(0, 9);		//Random distribution for numbers
-	std::uniform_int_distribution<int> letDist(0, 25);		//Random distribution for letters
-	std::uniform_int_distribution<int> symDist(0, 13);		//Random distribution for symbols
-		
-	//Determines which options can be used for the output
-	std::vector<int> choices = {1};			//Always include numbers
-	if (wantLower) choices.push_back(2);	//Include lowercase
-	if (wantUpper) choices.push_back(3);	//Include uppercase
-	if (wantSymbols) choices.push_back(4);	//Include symbols
-	std::uniform_int_distribution<int> typeDist(0, choices.size() - 1);
-
-	//Storage of characters available
-	char lowerCase[26] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
-	char upperCase[26] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
-	char symbo[14] = { '!', '#', '@', '~', '$', '^', '.', ',', '-', '+', '%', '?', '*', '=' };
-	
-	//Prints to output file
-	for (int p = 0; p < passLength; p++)
-	{
-		switch (choices[typeDist(mt)])
-		{
-		case 1:			//Numbers
-			outstream << numDist(mt);
-			break;
-		case 2:			//Lowercase
-			outstream << lowerCase[letDist(mt)];
-			break;
-		case 3:			//Uppercase
-			outstream << upperCase[letDist(mt)];
-			break;
-		case 4:			//Symbols
-			outstream << symbo[symDist(mt)];
-			break;
-		}
-	}
-	outstream << "\n";
 }
