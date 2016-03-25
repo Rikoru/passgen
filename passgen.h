@@ -13,7 +13,7 @@ public:
 	Passgen(int len, int amt, bool smA, bool lgA, bool sym);
 
 	//Outputs value to standard out
-	void printPass();
+	void printPass(bool outMeta);
 	void printMeta();
 
 private:
@@ -50,8 +50,8 @@ Passgen::~Passgen() {
 	//Nothing to destroy, vectors are magic
 }
 
-void Passgen::printPass() {
-	if (length > 1) printMeta();
+void Passgen::printPass(bool outMeta) {
+	if (length > 1 && outMeta) printMeta();
 	for (int i = 0; i < amount; i++) {
 
 		//Initializes random number generator

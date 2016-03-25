@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 		//Create a Passgen object using user-defined variables
 		Passgen pg(length, amountGen, smallAlpha, largeAlpha, symbols);
 		//Output based on amount requested
-		pg.printPass();
+		pg.printPass(true);
 	}
 	return 0;
 }
