@@ -59,15 +59,15 @@ void Passgen::printPass(bool outMeta) {
 		std::mt19937 mt(rd());
 
 		//Provides boundaries for where to distribute numbers
-		std::uniform_int_distribution<int> numDist(0, 9);		//Random distribution for numbers
-		std::uniform_int_distribution<int> letDist(0, 25);		//Random distribution for letters
-		std::uniform_int_distribution<int> symDist(0, 13);		//Random distribution for symbols
+		std::uniform_int_distribution<int> numDist(0, 9); //Random distribution for numbers
+		std::uniform_int_distribution<int> letDist(0, 25); //Random distribution for letters
+		std::uniform_int_distribution<int> symDist(0, 13); //Random distribution for symbols
 			
 		//Determines which options can be used for the output
-		std::vector<int> choices = {1};			//Always include numbers
-		if (lowercase) choices.push_back(2);	//Include lowercase
-		if (uppercase) choices.push_back(3);	//Include uppercase
-		if (symbols) choices.push_back(4);	//Include symbols
+		std::vector<int> choices = {1}; //Always include numbers
+		if (lowercase) choices.push_back(2); //Include lowercase
+		if (uppercase) choices.push_back(3); //Include uppercase
+		if (symbols) choices.push_back(4); //Include symbols
 		std::uniform_int_distribution<int> typeDist(0, choices.size() - 1);
 
 		//Storage of characters available
@@ -80,16 +80,16 @@ void Passgen::printPass(bool outMeta) {
 		{
 			switch (choices[typeDist(mt)])
 			{
-			case 1:			//Numbers
+			case 1: //Numbers
 				std::cout << numDist(mt);
 				break;
-			case 2:			//Lowercase
+			case 2: //Lowercase
 				std::cout << lowerCase[letDist(mt)];
 				break;
-			case 3:			//Uppercase
+			case 3: //Uppercase
 				std::cout << upperCase[letDist(mt)];
 				break;
-			case 4:			//Symbols
+			case 4: //Symbols
 				std::cout << symbo[symDist(mt)];
 				break;
 			}

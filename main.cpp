@@ -15,29 +15,41 @@ int main(int argc, char* argv[])
 	bool smallAlpha = false; //Inclusion of lowercase letters
 	bool largeAlpha = false; //Inclusion of uppercase letters
 	bool symbols = false; //Whether or not to include symbols
-	bool needHelp = false; //Whether or not to show the help file				
+	bool needHelp = false; //Whether or not to show the help file
+	bool showMeta = true; //Whether or not to include metainfo
+	char flagChar = '0'; //Replaced inside flag-checking loop			
 	
 	//Check if program is running in stdout mode
 	if (argc <= 1) needHelp = true;
 
 	for (int i = 0; i < argc; i++) 
 	{
-		if ((strcmp(argv[i], "-h") == 0) || (strcmp(argv[i], "--help") == 0))
+		if ((argv[i][0] == '-') && (argv[i][1] != '-'))
+		{
+			std::string temp = argv[i];
+			for (int j = 1; j < temp.length(); j++)
+			{
+				flagChar = argv[i][j];
+				if (flagChar == 'h')
+				{
+					needHelp = true;
+					break;
+				}
+				else if (flagChar == 'm') showMeta = false;
+				else if (flagChar == 'a') smallAlpha = true;
+				else if (flagChar == 'A') largeAlpha = true;
+				else if (flagChar == 's') symbols = true;
+			}
+		}
+		if (needHelp || (strcmp(argv[i], "--help") == 0))
 		{
 			needHelp = true;
+			break;
 		}
-		if ((strcmp(argv[i], "-a") == 0) || (strcmp(argv[i], "--smallalpha") == 0))
-		{
-			smallAlpha = true; //Enable small letters
-		}
-		if ((strcmp(argv[i], "-A") == 0) || (strcmp(argv[i], "--largealpha") == 0))
-		{
-			largeAlpha = true; //Enable capital letters
-		}
-		if ((strcmp(argv[i], "-s") == 0) || (strcmp(argv[i], "--symbol") == 0))
-		{
-			symbols = true; //Enable symbols
-		}
+		else if (strcmp(argv[i], "--nometa") == 0) showMeta = false;
+		else if (strcmp(argv[i], "--smallalpha") == 0) smallAlpha = true;
+		else if (strcmp(argv[i], "--largealpha") == 0) largeAlpha = true;
+		else if (strcmp(argv[i], "--symbol") == 0) symbols = true;
 		if ((strcmp(argv[i], "-n") == 0) || (strcmp(argv[i], "--amount") == 0))
 		{
 			//Make sure not at end of arguments
@@ -47,13 +59,13 @@ int main(int argc, char* argv[])
 				if (amountGen < 1) amountGen = 1;
 				if (amountGen > 1000) amountGen = 1000;
 			}
+			else amountGen = 1;
 		}
 		if ((strcmp(argv[i], "-l") == 0) || (strcmp(argv[i], "--length") == 0))
 		{
 			//Make sure not at end of arguments
 			if (!(i + 1 >= argc))
 			{
-				//Set the length of passwords to generate
 				length = atoi(argv[i + 1]);
 				if (length < 6) length = 6;
 				if (length > 256) length = 256;
@@ -68,7 +80,7 @@ int main(int argc, char* argv[])
 		//Create a Passgen object using user-defined variables
 		Passgen pg(length, amountGen, smallAlpha, largeAlpha, symbols);
 		//Output based on amount requested
-		pg.printPass(true);
+		pg.printPass(showMeta);
 	}
 	return 0;
 }
@@ -79,6 +91,7 @@ void PrintHelp(std::ostream &outstream)
 	outstream << "Password Generator\n\n" << '\t' << "It generates passwords!\n\n"
 		<< "Available Commands\n\n"
 		<< '\t' << "-h | --help = Opens this help file.\n\n"
+		<< '\t' << "-m | --nometa = Skip metainformation about generation.\n\n"
 		<< '\t' << "-a | --smallalpha = Enables lowercase letters.\n\n"
 		<< '\t' << "-A | --largealpha = Enables uppercase letters.\n\n"
 		<< '\t' << "-s | --symbol = Enables symbols to be generated.\n\n"
