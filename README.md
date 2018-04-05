@@ -7,8 +7,8 @@
 
 ### Tips
 1. Command-line flags can be combined.
-    * with the exception of `-n` and `-l`
-    * _eg_ `-maAs` (remove metainfo, add lowercase letters, uppercase letters, and symbols)
+    * With the exception of `-n` and `-l`
+    * _eg_ `-maAs` (remove meta-info, add lowercase letters, uppercase letters, and symbols)
 2. Piping output is a great way to avoid filling up your screen with text
     * _eg_ `./passgen -m -n 60 > test.txt` (put sixty 8-digit random numbers into a text file)
 3. Longer length passwords are generally more secure.
