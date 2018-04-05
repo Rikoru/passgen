@@ -97,9 +97,9 @@ void PrintHelp(std::ostream &outstream)
 		<< '\t' << "-s | --symbol = Enables symbols to be generated.\n\n"
 		<< '\t' << "-n | --amount = Specify how many passwords to generate.\n"
 		<< '\t' << "e.g. \'passgen -n 6\' will generate 6 passwords.\n"
-		<< '\t' << "Max amount to generate: 100 normally, 1000 for stdout.\n\n"
+		<< '\t' << "Max: 100 normally, 1000 for stdout.\n\n"
 		<< '\t' << "-l | --length = Specify length of passwords to generate.\n"
 		<< '\t' << "e.g. \'passgen -l 32\' will generate a 32 digit password.\n"
-		<< '\t' << "Max length to generate: 256 characters.\n\n"
+		<< '\t' << "Max: 256 characters.\n\n"
 		<< "More commands are likely to be added with time, stay tuned.\n";
 }
