@@ -44,12 +44,9 @@
 4. `./passgen -h` or `./passgen` for help and usage instructions
 
 ### Installing (on Windows)
-1. Clone repository
-2. Make a new, empty project in the IDE of your choice
-3. Add `PasswordGenerator/main.cpp` to your source files
-4. Compile and run
-  * Executable can be found wherever your compiler spits it out
- 
+1. ensure bash for windows is installed 
+2. follow the same steps for installing on *NIX Systems
+
 ### Contributing (same as any other project, really)
 1. Fork repository
 2. Make desired changes to project
