@@ -2,10 +2,10 @@
 
 #### Produce secure passwords using *Mersenne Twister*!
 
-### To-do
+## To-do
 1. Make it easier to use on Windows (?)
 
-### Tips
+## Tips
 1. Command-line flags can be combined.
     * With the exception of `-n` and `-l`
     * _eg_ `-maAs` (remove meta-info, add lowercase letters, uppercase letters, and symbols)
@@ -37,17 +37,18 @@
     6adDNR^^b~7@C89Pk1Xv%c3CKZBKB6357%A%,7kc%n*V3H=2.jgR3i0mW9Ibl058
     ```
 
-### Installing (on a *NIX system)
+## Installation Instructions
+###  *NIX system
 1. Clone repository
 2. `cd PasswordGenerator`
 3. `make`
 4. `./passgen -h` or `./passgen` for help and usage instructions
 
-### Installing (on Windows)
-1. ensure bash for windows is installed 
-2. follow the same steps for installing on *NIX Systems
+### Windows
+1. Ensure bash for Windows is installed 
+2. Follow the same steps for installing on *NIX Systems
 
-### Contributing (same as any other project, really)
+## Contributing (same as any other project, really)
 1. Fork repository
 2. Make desired changes to project
 3. Submit pull request
